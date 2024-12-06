@@ -10,10 +10,10 @@ if not os.environ.get("OPENAI_API_KEY"):
 
 from langchain_community.utilities import SQLDatabase
 
-db = SQLDatabase.from_uri("sqlite:///Chinook.db")
+db = SQLDatabase.from_uri("postgresql://data-insights:data-insights@192.168.176.63:5432/data-insights")
 print(db.dialect)
 print(db.get_usable_table_names())
-print(db.run("SELECT * FROM Artist LIMIT 10;"))
+# print(db.run("SELECT * FROM \"Customers\" LIMIT 10;"))
 
 
 from typing_extensions import TypedDict
@@ -25,9 +25,18 @@ class State(TypedDict):
     answer: str
 
 
-from langchain_openai import ChatOpenAI
+# from langchain_openai import ChatOpenAI
 
-llm = ChatOpenAI(model="gpt-4o-mini")
+# llm = ChatOpenAI(model="gpt-4o-mini")
+
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_ollama.llms import OllamaLLM
+from langchain_experimental.llms.ollama_functions import OllamaFunctions
+
+llm = OllamaLLM(model="duckdb-nsql", temperature=0)
+# llm = OllamaFunctions(model="phi3", format="json", temperature=0)
 
 
 from langchain import hub
@@ -54,21 +63,25 @@ def write_query(state: State):
     prompt = query_prompt_template.invoke(
         {
             "dialect": db.dialect,
-            "top_k": 10,
+            "top_k": 1000,
             "table_info": db.get_table_info(),
             "input": state["question"],
         }
     )
-    print(state)
-    structured_llm = llm.with_structured_output(QueryOutput)
-    result = structured_llm.invoke(prompt)
-    return {"query": result["query"]}
+    # print(prompt)
+    # print(state)
+    # structured_llm = llm.with_structured_output(QueryOutput)
+    result = llm.invoke(prompt)
+    print(result)
+    # return {"query": result["query"]}
+    return result
 
 
 def execute_query(state: State):
     """Execute SQL query."""
     execute_query_tool = QuerySQLDataBaseTool(db=db)
-    return {"result": execute_query_tool.invoke(state["query"])}
+    # return {"result": execute_query_tool.invoke(state["query"])}
+    return execute_query_tool.invoke(state)
 
 
 def generate_answer(state: State):
@@ -93,13 +106,21 @@ graph_builder.add_edge(START, "write_query")
 graph = graph_builder.compile()
 
 
+ans = write_query({"question": "How many invoices do we have?"})
+print("-----------------")
+print(ans)
+
+
+result = execute_query(ans)
+print(result)
+
 # ans = write_query({"question": "How many Employees are there?"})
 # print(ans)
 # ans = execute_query({"query": "SELECT COUNT(EmployeeId) AS EmployeeCount FROM Employee;"})
 # print(ans)
 
 
-for step in graph.stream(
-    {"question": "How many employees are there?"}, stream_mode="updates"
-):
-print(step)
+# for step in graph.stream(
+#     {"question": "How many customers are there?"}, stream_mode="updates"
+# ):
+#     print(step)
