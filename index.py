@@ -106,13 +106,13 @@ graph_builder.add_edge(START, "write_query")
 graph = graph_builder.compile()
 
 
-ans = write_query({"question": "How many invoices do we have?"})
-print("-----------------")
-print(ans)
+def main(question):
+    ans = write_query({"question": question})
+    print("-----------------")
+    print(ans)
 
-
-result = execute_query(ans)
-print(result)
+    result = execute_query(ans)
+    return result
 
 # ans = write_query({"question": "How many Employees are there?"})
 # print(ans)
@@ -124,3 +124,30 @@ print(result)
 #     {"question": "How many customers are there?"}, stream_mode="updates"
 # ):
 #     print(step)
+
+
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_ollama import ChatOllama
+import streamlit as st
+
+# template = "You are a social media manager who writes social media posts on the topic provided as {val}."
+# prompt_template = PromptTemplate(
+#     input_variables=["val"], template=template
+# )
+# llm = ChatOllama(model="llama3.1", temperature=0)
+# chain = prompt_template | llm | StrOutputParser()
+
+st.title("Customer Database Lookup")
+st.write("Query your database")
+
+user_input = st.text_input("Topic:", placeholder="Enter a topic, e.g., Weather")
+
+if user_input:
+    with st.spinner("Generating social media post..."):
+        # out = chain.invoke(input={"val": user_input})
+        out = main(user_input)
+        # chain.invoke(input={"val": user_input})
+        st.write("### Generated Post:")
+        st.write(out)
