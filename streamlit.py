@@ -11,8 +11,8 @@ if not os.environ.get("OPENAI_API_KEY"):
 from langchain_community.utilities import SQLDatabase
 
 db = SQLDatabase.from_uri("postgresql://data-insights:data-insights@192.168.176.63:5432/data-insights")
-print(db.dialect)
-print(db.get_usable_table_names())
+# print(db.dialect)
+# print(db.get_usable_table_names())
 # print(db.run("SELECT * FROM \"Customers\" LIMIT 10;"))
 
 
@@ -44,7 +44,7 @@ from langchain import hub
 query_prompt_template = hub.pull("langchain-ai/sql-query-system-prompt")
 
 assert len(query_prompt_template.messages) == 1
-query_prompt_template.messages[0].pretty_print()
+# query_prompt_template.messages[0].pretty_print()
 
 
 
@@ -72,7 +72,7 @@ def write_query(state: State):
     # print(state)
     # structured_llm = llm.with_structured_output(QueryOutput)
     result = llm.invoke(prompt)
-    print(result)
+    # print(result)
     # return {"query": result["query"]}
     return result
 
@@ -89,29 +89,29 @@ def generate_answer(state: State):
     prompt = (
         "Given the following user question, corresponding SQL query, "
         "and SQL result, answer the user question.\n\n"
-        f'Question: {state["question"]}\n'
-        f'SQL Query: {state["query"]}\n'
-        f'SQL Result: {state["result"]}'
+        f'{state}\n'
+        # f'Question: {state["question"]}\n'
+        # f'SQL Query: {state["query"]}\n'
+        # f'SQL Result: {state["result"]}'
     )
     response = llm.invoke(prompt)
-    return {"answer": response.content}
+    return {"answer": response}
 
 
-from langgraph.graph import START, StateGraph
+# from langgraph.graph import START, StateGraph
 
-graph_builder = StateGraph(State).add_sequence(
-    [write_query, execute_query, generate_answer]
-)
-graph_builder.add_edge(START, "write_query")
-graph = graph_builder.compile()
+# graph_builder = StateGraph(State).add_sequence(
+#     [write_query, execute_query, generate_answer]
+# )
+# graph_builder.add_edge(START, "write_query")
+# graph = graph_builder.compile()
 
 
 def main(question):
     ans = write_query({"question": question})
-    print("-----------------")
-    print(ans)
 
     result = execute_query(ans)
+    # return generate_answer(result)
     return result
 
 # ans = write_query({"question": "How many Employees are there?"})
@@ -140,14 +140,24 @@ import streamlit as st
 # chain = prompt_template | llm | StrOutputParser()
 
 # st.title("Customer Database Lookup")
-st.write("Query your database")
+# st.write("Query your database")
 
-user_input = st.text_input("Topic:", placeholder="Enter a topic, e.g., Weather")
+# user_input = st.text_input("Topic:", placeholder="Enter a topic, e.g., Weather")
 
-if user_input:
-    with st.spinner("Generating social media post..."):
-        # out = chain.invoke(input={"val": user_input})
-        out = main(user_input)
-        # chain.invoke(input={"val": user_input})
-        st.write("### Generated Post:")
-        st.write(out)
+# if user_input:
+#     with st.spinner("Generating social media post..."):
+#         # out = chain.invoke(input={"val": user_input})
+#         out = main(user_input)
+#         # chain.invoke(input={"val": user_input})
+#         st.write("### Generated Post:")
+#         st.write(out)
+
+
+
+
+
+##
+
+print(main("How many invoices are there?"))
+print(main("How many customers are there?"))
+print(main("How many invoices are there by status?"))
