@@ -80,6 +80,7 @@ def write_query(state: State):
 def execute_query(state: State):
     """Execute SQL query."""
     execute_query_tool = QuerySQLDataBaseTool(db=db)
+    print(state)
     # return {"result": execute_query_tool.invoke(state["query"])}
     return execute_query_tool.invoke(state)
 
@@ -139,18 +140,18 @@ import streamlit as st
 # llm = ChatOllama(model="llama3.1", temperature=0)
 # chain = prompt_template | llm | StrOutputParser()
 
-# st.title("Customer Database Lookup")
-# st.write("Query your database")
+st.title("Customer Database Lookup")
+st.write("Query your database")
 
-# user_input = st.text_input("Topic:", placeholder="Enter a topic, e.g., Weather")
+user_input = st.text_input("Topic:", placeholder="Enter a topic, e.g., Weather")
 
-# if user_input:
-#     with st.spinner("Generating social media post..."):
-#         # out = chain.invoke(input={"val": user_input})
-#         out = main(user_input)
-#         # chain.invoke(input={"val": user_input})
-#         st.write("### Generated Post:")
-#         st.write(out)
+if user_input:
+    with st.spinner("Generating answer..."):
+        # out = chain.invoke(input={"val": user_input})
+        out = main(user_input)
+        # chain.invoke(input={"val": user_input})
+        st.write("### Generated Post:")
+        st.write(out)
 
 
 
@@ -158,6 +159,6 @@ import streamlit as st
 
 ##
 
-print(main("How many invoices are there?"))
-print(main("How many customers are there?"))
-print(main("How many invoices are there by status?"))
+# print(main("How many invoices are there?"))
+# print(main("How many customers are there?"))
+# print(main("How many invoices are there by status?"))
